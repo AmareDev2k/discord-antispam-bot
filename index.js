@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, Partials, EmbedBuilder, PermissionFlagsBits }
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID || '';
-const ANNOUNCEMENT_CHANNEL_ID = process.env.ANNOUNCEMENT_CHANNEL_ID || '1499039164769898636';
+const ANNOUNCEMENT_CHANNEL_ID = process.env.ANNOUNCEMENT_CHANNEL_ID || '';
 const STARTUP_MESSAGE_MARKER = 'VINBOT_STARTUP_MESSAGE_V1';
 const ANNOUNCEMENT_TITLE = 'VinBot Anti-Spam Protection';
 
