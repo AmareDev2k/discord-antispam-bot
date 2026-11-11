@@ -1,0 +1,13 @@
+{
+  "name": "discord-antispam-bot",
+  "version": "1.0.0",
+  "description": "Automated Discord Anti-Spam Bot (@everyone & .png/.jpg cross-channel spam protection with 5h mute)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  }
+}
