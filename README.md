@@ -22,11 +22,11 @@ You have **both Python and Node.js** implementations included in this folder. Pi
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**.
 2. Go to the **Bot** tab on the left menu:
    - Click **Reset Token** and copy your Bot Token.
-   - Scroll down to **Privileged Gateway Intents** and **ENABLE ALL THREE**:
-     - ✅ **Presence Intent**
-     - ✅ **Server Members Intent**
+   - Scroll down to **Privileged Gateway Intents** and enable:
+     - ✅ **Server Members Intent** *(Required to identify and timeout members)*
      - ✅ **Message Content Intent** *(Required to read `@everyone` and attachments!)*
    - Click **Save Changes**.
+   - **Presence Intent is not required** by this bot.
 3. Go to **OAuth2 -> URL Generator**:
    - Under **Scopes**, check: `bot`
    - Under **Bot Permissions**, check:
@@ -38,6 +38,10 @@ You have **both Python and Node.js** implementations included in this folder. Pi
 4. **IMPORTANT — Role Hierarchy**:
    - In your Discord Server, go to **Server Settings -> Roles**.
    - Drag the **Bot's Role** near the **top of the role list** (above regular member roles). Discord only allows a bot to timeout users whose highest role is below the bot's highest role!
+
+If the bot prints `PrivilegedIntentsRequired`, return to the **Bot** page and
+confirm both required intents are enabled for the same application whose token
+is in `.env`, then save and restart the bot.
 
 ---
 

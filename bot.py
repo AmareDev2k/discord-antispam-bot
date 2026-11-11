@@ -113,7 +113,7 @@ async def handle_spammer(guild: discord.Guild, member: discord.Member, history: 
         duration = timedelta(hours=MUTE_DURATION_HOURS)
         await member.timeout(duration, reason=reason)
         mute_success = True
-        print(f"🔇 Muted {member} ({member.id}) for {MUTE_DURATION_HOURS} hours in {guild.name}.")
+        print(f"🔇 Muted {member} ({member.id}) for {MUTE_DURATION_HOURS} hours in {member.guild.name}.")
     except discord.Forbidden:
         print(f"❌ Missing permissions to timeout {member} in {guild.name}. Check bot role hierarchy!")
     except Exception as e:
@@ -178,4 +178,14 @@ if __name__ == "__main__":
     if not TOKEN or TOKEN == "your_bot_token_here":
         print("❌ ERROR: Please set your DISCORD_TOKEN in the .env file before running the bot.")
     else:
-        bot.run(TOKEN)
+        try:
+            bot.run(TOKEN)
+        except discord.errors.PrivilegedIntentsRequired:
+            print(
+                "❌ ERROR: Discord rejected the requested privileged intents.\n"
+                "   Open Discord Developer Portal -> Your Application -> Bot.\n"
+                "   Under Privileged Gateway Intents, enable:\n"
+                "   - Server Members Intent\n"
+                "   - Message Content Intent\n"
+                "   Then save the changes and run this bot again."
+            )
