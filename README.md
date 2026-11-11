@@ -90,3 +90,8 @@ Open `bot.py` (or `index.js`) and adjust the constants at the top if needed:
 - `MAX_CHANNELS_THRESHOLD = 3` (Number of different text/voice channels before triggering)
 - `MAX_MESSAGES_THRESHOLD = 4` (Number of image/`@everyone` messages before triggering)
 - `MUTE_DURATION_HOURS = 5` (Timeout duration in hours)
+
+## 📄 Policies
+
+- [Terms of Service](Terms%20of%20Service.md)
+- [Privacy Policy](Privacy%20Policy.md)
