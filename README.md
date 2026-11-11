@@ -44,12 +44,19 @@ You have **both Python and Node.js** implementations included in this folder. Pi
 ## ⚙️ Step 2: Configure `.env`
 
 1. Rename `.env.example` to `.env`
-2. Paste your token inside `.env`:
+2. In Discord, enable **Developer Mode** under **User Settings -> Advanced**.
+3. Right-click the staff moderation-log text channel and choose **Copy Channel ID**.
+4. Paste your token and the copied channel ID inside `.env`:
    ```env
    DISCORD_TOKEN=your_actual_discord_bot_token_here
    LOG_CHANNEL_ID=123456789012345678
    ```
-   *(If you don't want log embeds, keep `LOG_CHANNEL_ID=0`)*.
+   `LOG_CHANNEL_ID` is the text channel where the bot sends a moderation embed after
+   detecting and handling spam. The embed reports the user, timeout result, deleted
+   message count, and detection reason. The bot needs **View Channel**, **Send Messages**,
+   and **Embed Links** permissions in that channel.
+
+   If you do not want moderation logs, leave `LOG_CHANNEL_ID=0`.
 
 ---
 
