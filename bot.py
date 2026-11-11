@@ -11,6 +11,11 @@ load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID", "0"))  # Optional: Channel ID to log mute events
+ANNOUNCEMENT_CHANNEL_ID = int(
+    os.getenv("ANNOUNCEMENT_CHANNEL_ID", "1499039164769898636")
+)
+STARTUP_MESSAGE_MARKER = "VINBOT_STARTUP_MESSAGE_V1"
+ANNOUNCEMENT_TITLE = "VinBot Anti-Spam Protection"
 
 # Configuration
 SPAM_TIME_WINDOW = 15  # Seconds to track messages
@@ -36,6 +41,118 @@ processing_users = set()
 async def on_ready():
     print(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
     print("🛡️ Anti-Spam Protection Active (Monitoring Text & Voice Channel Chats)")
+    await send_startup_message()
+    await send_announcement_message()
+
+async def send_startup_message():
+    if not LOG_CHANNEL_ID:
+        return
+
+    for guild in bot.guilds:
+        log_channel = guild.get_channel(LOG_CHANNEL_ID)
+        if not isinstance(log_channel, discord.TextChannel):
+            continue
+        try:
+            async for message in log_channel.history(limit=100):
+                if (
+                    message.author.id == bot.user.id
+                    and message.embeds
+                    and message.embeds[0].footer.text == STARTUP_MESSAGE_MARKER
+                ):
+                    break
+            else:
+                embed = discord.Embed(
+                    title="🛡️ VinBot is online!",
+                    description=(
+                        "Anti-spam protection is active for `@everyone`, `@here`, "
+                        "and image spam.\n\n"
+                        "Detected spam may be timed out, removed, and reported in this channel."
+                    ),
+                    color=discord.Color.green(),
+                )
+                embed.set_footer(text=STARTUP_MESSAGE_MARKER)
+                await log_channel.send(embed=embed)
+        except discord.Forbidden:
+            print(f"⚠️ Cannot read or send messages in log channel for {guild.name}.")
+        except discord.HTTPException as error:
+            print(f"⚠️ Failed to post startup message in {guild.name}: {error}")
+
+async def send_announcement_message():
+    if not ANNOUNCEMENT_CHANNEL_ID:
+        return
+
+    for guild in bot.guilds:
+        announcement_channel = guild.get_channel(ANNOUNCEMENT_CHANNEL_ID)
+        if not isinstance(announcement_channel, discord.TextChannel):
+            continue
+
+        try:
+            async for message in announcement_channel.history(limit=100):
+                if (
+                    message.author.id == bot.user.id
+                    and message.embeds
+                    and message.embeds[0].title == ANNOUNCEMENT_TITLE
+                ):
+                    return
+
+            embed = discord.Embed(
+                title=ANNOUNCEMENT_TITLE,
+                description=(
+                    "This bot helps keep the server safe by automatically detecting "
+                    "and handling rapid spam activity. The protection runs in the "
+                    "background and is active across the server's text-based chats."
+                ),
+                color=discord.Color.blue(),
+            )
+            embed.add_field(
+                name="What the bot detects",
+                value=(
+                    "• Repeated `@everyone` or `@here` mentions\n"
+                    "• Image attachment spam (`.png`, `.jpg`, `.jpeg`, `.gif`, and `.webp`)\n"
+                    "• Suspicious activity spread across multiple channels\n"
+                    "• Several suspicious messages sent within a short time window"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="What happens when spam is detected",
+                value=(
+                    f"1. The user is timed out for {MUTE_DURATION_HOURS} hours when Discord "
+                    "permissions allow it.\n"
+                    "2. Recent tracked spam messages are deleted immediately.\n"
+                    "3. The bot checks all available text and voice-channel text chats "
+                    "for additional messages from that user from the last two minutes.\n"
+                    "4. A moderation summary is sent to the configured log channel."
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="What is ignored",
+                value=(
+                    "Direct messages, messages sent by bots, and messages from members "
+                    "with the `Manage Messages` permission are ignored."
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="Important limitations",
+                value=(
+                    "The bot needs permission to view channels, read message history, "
+                    "manage messages, send embeds, and moderate members. Discord role "
+                    "hierarchy can prevent a timeout even when spam is detected."
+                ),
+                inline=False,
+            )
+            embed.set_footer(text="Made by AmareDev2k")
+            await announcement_channel.send(embed=embed)
+            return
+        except discord.Forbidden:
+            print(
+                f"⚠️ Cannot read or send messages in announcement channel "
+                f"for {guild.name}."
+            )
+        except discord.HTTPException as error:
+            print(f"⚠️ Failed to post announcement in {guild.name}: {error}")
 
 def is_suspicious_message(message: discord.Message) -> bool:
     """Check if message contains @everyone/@here mention or image attachments."""

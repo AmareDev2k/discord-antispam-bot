@@ -53,7 +53,8 @@ is in `.env`, then save and restart the bot.
 4. Paste your token and the copied channel ID inside `.env`:
    ```env
    DISCORD_TOKEN=your_actual_discord_bot_token_here
-   LOG_CHANNEL_ID=123456789012345678
+   LOG_CHANNEL_ID=your_log_channel_id
+   ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id
    ```
    `LOG_CHANNEL_ID` is the text channel where the bot sends a moderation embed after
    detecting and handling spam. The embed reports the user, timeout result, deleted
@@ -61,6 +62,10 @@ is in `.env`, then save and restart the bot.
    and **Embed Links** permissions in that channel.
 
    If you do not want moderation logs, leave `LOG_CHANNEL_ID=0`.
+   `ANNOUNCEMENT_CHANNEL_ID` is the channel where the bot posts a detailed,
+   one-time explanation of its anti-spam behavior. Both implementations check for
+   the bot-authored announcement title before posting, so restarting the bot does
+   not create duplicate announcements.
 
 ---
 

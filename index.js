@@ -3,6 +3,9 @@ const { Client, GatewayIntentBits, Partials, EmbedBuilder, PermissionFlagsBits }
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID || '';
+const ANNOUNCEMENT_CHANNEL_ID = process.env.ANNOUNCEMENT_CHANNEL_ID || '1499039164769898636';
+const STARTUP_MESSAGE_MARKER = 'VINBOT_STARTUP_MESSAGE_V1';
+const ANNOUNCEMENT_TITLE = 'VinBot Anti-Spam Protection';
 
 // Configuration
 const SPAM_TIME_WINDOW_MS = 15 * 1000; // 15 seconds window
@@ -26,10 +29,106 @@ const client = new Client({
 const userActivity = new Map();
 const processingUsers = new Set();
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log(`✅ Logged in as ${client.user.tag}`);
     console.log('🛡️ Anti-Spam Protection Active (Monitoring Text & Voice Channel Chats)');
+    await sendStartupMessage();
+    await sendAnnouncementMessage();
 });
+
+async function sendStartupMessage() {
+    if (!LOG_CHANNEL_ID) return;
+
+    const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+    if (!logChannel || !logChannel.isTextBased()) return;
+
+    try {
+        const messages = await logChannel.messages.fetch({ limit: 100 });
+        const alreadyPosted = messages.some(message =>
+            message.author.id === client.user.id &&
+            message.embeds.some(embed => embed.footer?.text === STARTUP_MESSAGE_MARKER)
+        );
+        if (!alreadyPosted) {
+            const embed = new EmbedBuilder()
+                .setTitle('🛡️ VinBot is online!')
+                .setDescription(
+                    'Anti-spam protection is active for `@everyone`, `@here`, and image spam.\n\n' +
+                    'Detected spam may be timed out, removed, and reported in this channel.'
+                )
+                .setColor(0x00AE86)
+                .setFooter({ text: STARTUP_MESSAGE_MARKER });
+            await logChannel.send({ embeds: [embed] });
+        }
+    } catch (error) {
+        console.error('❌ Failed to post startup message:', error.message);
+    }
+}
+
+async function sendAnnouncementMessage() {
+    if (!ANNOUNCEMENT_CHANNEL_ID) return;
+
+    const announcementChannel = client.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID);
+    if (!announcementChannel || !announcementChannel.isTextBased()) return;
+
+    try {
+        const messages = await announcementChannel.messages.fetch({ limit: 100 });
+        const alreadyPosted = messages.some(message =>
+            message.author.id === client.user.id &&
+            message.embeds.some(embed => embed.title === ANNOUNCEMENT_TITLE)
+        );
+        if (alreadyPosted) return;
+
+        const embed = new EmbedBuilder()
+            .setTitle(ANNOUNCEMENT_TITLE)
+            .setDescription(
+                'This bot helps keep the server safe by automatically detecting and handling ' +
+                'rapid spam activity. The protection runs in the background and is active ' +
+                "across the server's text-based chats."
+            )
+            .setColor(0x3498DB)
+            .addFields(
+                {
+                    name: 'What the bot detects',
+                    value:
+                        '• Repeated `@everyone` or `@here` mentions\n' +
+                        '• Image attachment spam (`.png`, `.jpg`, `.jpeg`, `.gif`, and `.webp`)\n' +
+                        '• Suspicious activity spread across multiple channels\n' +
+                        '• Several suspicious messages sent within a short time window',
+                    inline: false
+                },
+                {
+                    name: 'What happens when spam is detected',
+                    value:
+                        '1. The user is timed out for 5 hours when Discord permissions allow it.\n' +
+                        '2. Recent tracked spam messages are deleted immediately.\n' +
+                        '3. The bot checks available text and voice-channel text chats for ' +
+                        'additional messages from that user from the last two minutes.\n' +
+                        '4. A moderation summary is sent to the configured log channel.',
+                    inline: false
+                },
+                {
+                    name: 'What is ignored',
+                    value:
+                        'Direct messages, messages sent by bots, and messages from members ' +
+                        'with the `Manage Messages` permission are ignored.',
+                    inline: false
+                },
+                {
+                    name: 'Important limitations',
+                    value:
+                        'The bot needs permission to view channels, read message history, ' +
+                        'manage messages, send embeds, and moderate members. Discord role ' +
+                        'hierarchy can prevent a timeout even when spam is detected.',
+                    inline: false
+                }
+            )
+            .setFooter({ text: 'Made by AmareDev2k' });
+
+        await announcementChannel.send({ embeds: [embed] });
+    } catch (error) {
+        console.error('❌ Failed to post announcement:', error.message);
+    }
+}
 
 function isSuspiciousMessage(message) {
     const hasEveryone = message.mentions.everyone || message.content.includes('@everyone') || message.content.includes('@here');
